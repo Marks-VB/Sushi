@@ -4,55 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sushi Amanhã? 🍣</title>
-    <!-- Carregamento do Tailwind CSS para estilo e responsividade -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Biblioteca de Confetes -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* Configuração de fonte e cores básicas */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7fee7; /* Verde claro/Creme */
-            overflow: hidden; /* Evita barras de rolagem ao mover o botão */
-            touch-action: manipulation; /* Melhoria de performance em touchscreens */
+            background-color: #f7fee7;
+            overflow: hidden;
+            touch-action: manipulation;
         }
-        /* Classe para o botão "Não" que será posicionado de forma absoluta */
         .fugitive-button {
             position: absolute;
-            transition: all 0.2s ease-out; /* Transição suave para o movimento */
-            will-change: transform, top, left;
+            transition: all 0.15s ease-out; /* Ficou um pouco mais rápido para ser mais difícil */
+            will-change: top, left;
+            z-index: 50;
         }
     </style>
 </head>
 <body class="p-4 flex items-center justify-center min-h-screen">
 
-    <div id="container" class="bg-white p-6 md:p-10 rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md text-center">
+    <div id="container" class="bg-white p-6 md:p-10 rounded-3xl shadow-2xl w-full max-w-sm md:max-w-md text-center relative z-10">
 
-        <!-- Título da Pergunta -->
         <h1 class="text-3xl md:text-4xl font-extrabold text-green-700 mb-8">
             Sushi Amanhã? 🍣
         </h1>
 
-        <!-- Área de Mensagens -->
-        <div id="messageBox" class="text-lg font-semibold h-8 mb-6 text-gray-600">
+        <div id="messageBox" class="text-lg font-semibold min-h-[3rem] mb-6 text-gray-600 flex items-center justify-center">
             Qual é a sua decisão?
         </div>
 
-        <div class="relative h-48 mb-8" id="buttonArea">
+        <div class="relative h-64 w-full" id="buttonArea">
             
             <!-- Botão SIM -->
             <button id="yesButton" onclick="confirmDecision(true)"
                 class="absolute top-1/4 left-1/2 -translate-x-1/2 w-4/5 py-3 
                        bg-green-600 hover:bg-green-700 text-white font-bold 
                        rounded-xl shadow-lg transform transition duration-150 ease-in-out 
-                       hover:scale-[1.03] active:scale-95 text-xl">
+                       hover:scale-[1.03] active:scale-95 text-xl z-20">
                 Sim!
             </button>
 
-            <!-- Botão NÃO - O 'Fugitivo' -->
-            <button id="noButton" onclick="moveButton()"
+            <!-- Botão NÃO (Agora com onmouseover também) -->
+            <button id="noButton" onclick="moveButton()" onmouseover="moveButton()"
                 class="fugitive-button top-3/4 left-1/2 -translate-x-1/2 w-3/5 py-2 
                        bg-red-500 hover:bg-red-600 text-white font-semibold 
-                       rounded-xl shadow-md transform transition duration-150 ease-in-out 
-                       hover:scale-105 text-lg cursor-pointer">
+                       rounded-xl shadow-md cursor-pointer whitespace-nowrap text-lg">
                 Não
             </button>
 
@@ -60,129 +58,131 @@
     </div>
 
     <script>
-        // Variáveis globais
         const yesButton = document.getElementById('yesButton');
         const noButton = document.getElementById('noButton');
         const messageBox = document.getElementById('messageBox');
         const buttonArea = document.getElementById('buttonArea');
-        let moveCount = 0; // Contador de cliques no 'Não'
-        const MAX_MOVES = 5; // Número de cliques para forçar o 'Sim'
+        
+        let moveCount = 0; 
+        const MAX_MOVES = 5; 
+        const PADDING = 20;
 
-        // Dimensões mínimas e máximas para o movimento do botão
-        const PADDING = 20; // Espaçamento de segurança das bordas
+        // Frases para o botão "Não"
+        const frasesFuga = [
+            "Não", 
+            "Nem vem!", 
+            "Sai fora!", 
+            "Hoje não!", 
+            "Errou!", 
+            "Tenta de novo!",
+            "Sem chance!"
+        ];
 
-        /**
-         * Gera um número inteiro aleatório entre min (incluído) e max (incluído).
-         * @param {number} min 
-         * @param {number} max 
-         * @returns {number}
-         */
         function getRandomInt(min, max) {
             min = Math.ceil(min);
             max = Math.floor(max);
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        /**
-         * Move o botão 'Não' para uma nova posição aleatória.
-         */
         function moveButton() {
-            if (yesButton.disabled) return; // Se a decisão já foi tomada, não move
+            if (yesButton.disabled) return;
 
             moveCount++;
-            messageBox.textContent = `Opa! O botão 'Não' tentou fugir... (${moveCount}/${MAX_MOVES} tentativas!)`;
+            
+            // Muda o texto do botão a cada movimento
+            // O operador % (módulo) faz o índice voltar ao 0 se passar do tamanho da lista
+            noButton.innerText = frasesFuga[moveCount % frasesFuga.length];
 
-            // 1. Obter limites da área de movimento (buttonArea)
+            // Atualiza mensagem
+            messageBox.textContent = `Tentativa ${moveCount} de ${MAX_MOVES}... O botão não quer deixar!`;
+
             const bounds = buttonArea.getBoundingClientRect();
-            const containerWidth = bounds.width;
-            const containerHeight = bounds.height;
-            
-            // 2. Obter dimensões do botão 'Não'
             const buttonRect = noButton.getBoundingClientRect();
-            const buttonWidth = buttonRect.width;
-            const buttonHeight = buttonRect.height;
             
-            // 3. Calcular novos top/left em pixels, garantindo que o botão fique visível
-            // Maximo de Left/Top = Limite do Container - Largura/Altura do Botão - PADDING
-            const maxLeft = containerWidth - buttonWidth - PADDING;
-            const maxTop = containerHeight - buttonHeight - PADDING;
+            const maxLeft = bounds.width - buttonRect.width - PADDING;
+            const maxTop = bounds.height - buttonRect.height - PADDING;
 
-            // Mínimo de Left/Top = PADDING
             const newLeft = getRandomInt(PADDING, maxLeft);
             const newTop = getRandomInt(PADDING, maxTop);
             
-            // 4. Aplicar a nova posição
-            // O uso de 'px' é crucial para 'position: absolute'
             noButton.style.left = `${newLeft}px`;
             noButton.style.top = `${newTop}px`;
-            noButton.style.transform = 'none'; // Remove a tradução inicial (-translate-x-1/2)
+            noButton.style.transform = 'none'; 
 
-            // 5. Se o usuário for muito persistente, força o 'Sim' (Sushi)
+            // Lógica da Persistência (Força o Sim)
             if (moveCount >= MAX_MOVES) {
-                // Atraso de 200ms para permitir a transição final do movimento
+                // Remove o evento de mouseover para parar de fugir no último segundo
+                noButton.onmouseover = null;
+                noButton.onclick = null;
+                
                 setTimeout(() => {
-                    confirmDecision(true); // <--- Confirma SIM (Sushi)
-                }, 200);
+                    confirmDecision(true); 
+                }, 300);
             }
         }
 
-        /**
-         * Confirma a decisão final e desabilita os botões.
-         * @param {boolean} isYes Se 'true' a decisão é 'Sim', se 'false' a decisão é 'Não'.
-         */
         function confirmDecision(isYes) {
-            // Desabilita ambos os botões
             yesButton.disabled = true;
             noButton.disabled = true;
-            noButton.classList.remove('fugitive-button', 'hover:bg-red-600', 'cursor-pointer');
             
             if (isYes) {
+                // Configuração visual de sucesso
                 messageBox.classList.remove('text-gray-600', 'text-red-700');
-                messageBox.classList.add('text-green-700');
+                messageBox.classList.add('text-green-700', 'font-bold');
                 
-                // Verifica se o SIM veio por persistência (movimentos no 'Não')
                 if (moveCount >= MAX_MOVES) {
-                    messageBox.textContent = `🥳 Você tentou escapar ${MAX_MOVES} vezes! A persistência garante: Sushi Confirmado! 🍣`;
+                    messageBox.innerHTML = `😓 Ufa! Você insistiu tanto que venceu.<br>🍣 SUSHI CONFIRMADO!`;
                 } else {
-                    messageBox.textContent = "✅ Decisão Confirmada! Sushi é amanhã! 🍣";
+                    messageBox.textContent = "✅ Decisão Sábia! Sushi Confirmado! 🍣";
                 }
                 
-                yesButton.classList.add('animate-pulse');
+                yesButton.classList.add('animate-pulse', 'scale-110');
+                
+                // Dispara os confetes!
+                dispararConfetes();
+
             } else {
-                messageBox.classList.remove('text-gray-600', 'text-green-700');
-                messageBox.classList.add('text-red-700');
-                messageBox.textContent = "❌ Decisão Confirmada! Sem sushi amanhã. 😔";
-                noButton.classList.add('bg-gray-400'); // Mudar cor para indicar que parou
-                noButton.style.cssText = ''; // Limpar estilos de movimento
+                // Caso teórico (impossível de chegar aqui com a lógica atual, mas mantido por segurança)
+                messageBox.textContent = "❌ Sem sushi...";
             }
 
-            // Centraliza o botão 'Sim' ou 'Não' que foi selecionado
-            const finalButton = isYes ? yesButton : noButton;
-            finalButton.classList.add('w-full', 'py-4', 'top-1/4', 'left-1/2', '-translate-x-1/2', 'absolute');
-            
-            // Oculta o botão não-selecionado
-            if (isYes) {
-                noButton.style.display = 'none';
-            } else {
-                yesButton.style.display = 'none';
-                noButton.style.backgroundColor = 'rgb(156, 163, 175)'; // gray-400
-            }
-
-            buttonArea.classList.remove('relative');
-            buttonArea.classList.add('h-24');
+            // Centraliza o botão vencedor
+            yesButton.classList.add('w-full', 'py-4', 'top-1/4', 'left-1/2', '-translate-x-1/2', 'absolute', 'z-50');
+            noButton.style.display = 'none';
         }
 
-        // Função para garantir que os botões comecem nas posições corretas
+        function dispararConfetes() {
+            // Efeito de explosão de confetes
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                var particleCount = 50 * (timeLeft / duration);
+                // Confetes saindo de dois pontos aleatórios
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+        }
+
         function initializeButtonPositions() {
-            // Reset de estilos do botão 'Não' para a posição inicial (para garantir que -translate-x-1/2 funcione)
             noButton.style.left = '50%';
             noButton.style.top = '75%';
             noButton.style.transform = 'translateX(-50%)';
         }
 
-        // Chamada de inicialização para garantir que o layout é aplicado corretamente no carregamento
         window.addEventListener('load', initializeButtonPositions);
-        window.addEventListener('resize', initializeButtonPositions); // Ajusta no resize do mobile
+        window.addEventListener('resize', initializeButtonPositions);
     </script>
 </body>
 </html>
