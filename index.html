@@ -3,11 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sushi Amanhã? 🍣</title>
+    
+    <!-- SEO Principal -->
+    <title>Sushi Amanhã? 🍣 - O Convite Irrecusável</title>
+    <meta name="description" content="Um convite especial (e impossível de recusar) para comer sushi amanhã. Tente clicar em 'Não' se for capaz! 🍣😂">
+    <meta name="keywords" content="sushi, convite, jantar, engraçado, interativo, botão fugitivo">
+    <meta name="author" content="Seu Nome">
+    <meta name="theme-color" content="#15803d"> <!-- Cor da barra do navegador (Verde do botão) -->
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://sushi-amanha.vercel.app/"> <!-- Substitua pelo seu link final -->
+    <meta property="og:title" content="Vamos comer Sushi? 🍣">
+    <meta property="og:description" content="Eu tenho uma proposta irrecusável para você... Clique para ver! (Dica: o botão 'Não' é tímido).">
+    
+    <!-- IMAGEM DE PREVIEW (Essencial para WhatsApp) -->
+    <!-- Dica: Coloque uma imagem bonita de sushi chamada 'og-image.jpg' na pasta do seu projeto -->
+    <meta property="og:image" content="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=1200&auto=format&fit=crop">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Vamos comer Sushi? 🍣">
+    <meta property="twitter:description" content="Tente recusar este convite se for capaz! 😂">
+    <meta property="twitter:image" content="https://images.unsplash.com/photo-1579871494447-9811cf80d66c?q=80&w=1200&auto=format&fit=crop">
+
+    <!-- Favicon (Ícone da aba) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍣</text></svg>">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Biblioteca de Confetes -->
+    <!-- Confetes -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -17,7 +44,7 @@
         }
         .fugitive-button {
             position: absolute;
-            transition: all 0.15s ease-out; /* Ficou um pouco mais rápido para ser mais difícil */
+            transition: all 0.15s ease-out;
             will-change: top, left;
             z-index: 50;
         }
@@ -46,7 +73,7 @@
                 Sim!
             </button>
 
-            <!-- Botão NÃO (Agora com onmouseover também) -->
+            <!-- Botão NÃO -->
             <button id="noButton" onclick="moveButton()" onmouseover="moveButton()"
                 class="fugitive-button top-3/4 left-1/2 -translate-x-1/2 w-3/5 py-2 
                        bg-red-500 hover:bg-red-600 text-white font-semibold 
@@ -67,16 +94,7 @@
         const MAX_MOVES = 5; 
         const PADDING = 20;
 
-        // Frases para o botão "Não"
-        const frasesFuga = [
-            "Não", 
-            "Nem vem!", 
-            "Sai fora!", 
-            "Hoje não!", 
-            "Errou!", 
-            "Tenta de novo!",
-            "Sem chance!"
-        ];
+        const frasesFuga = ["Não", "Nem vem!", "Sai fora!", "Hoje não!", "Errou!", "Tenta de novo!", "Sem chance!"];
 
         function getRandomInt(min, max) {
             min = Math.ceil(min);
@@ -86,19 +104,12 @@
 
         function moveButton() {
             if (yesButton.disabled) return;
-
             moveCount++;
-            
-            // Muda o texto do botão a cada movimento
-            // O operador % (módulo) faz o índice voltar ao 0 se passar do tamanho da lista
             noButton.innerText = frasesFuga[moveCount % frasesFuga.length];
-
-            // Atualiza mensagem
             messageBox.textContent = `Tentativa ${moveCount} de ${MAX_MOVES}... O botão não quer deixar!`;
 
             const bounds = buttonArea.getBoundingClientRect();
             const buttonRect = noButton.getBoundingClientRect();
-            
             const maxLeft = bounds.width - buttonRect.width - PADDING;
             const maxTop = bounds.height - buttonRect.height - PADDING;
 
@@ -109,15 +120,10 @@
             noButton.style.top = `${newTop}px`;
             noButton.style.transform = 'none'; 
 
-            // Lógica da Persistência (Força o Sim)
             if (moveCount >= MAX_MOVES) {
-                // Remove o evento de mouseover para parar de fugir no último segundo
                 noButton.onmouseover = null;
                 noButton.onclick = null;
-                
-                setTimeout(() => {
-                    confirmDecision(true); 
-                }, 300);
+                setTimeout(() => { confirmDecision(true); }, 300);
             }
         }
 
@@ -126,7 +132,6 @@
             noButton.disabled = true;
             
             if (isYes) {
-                // Configuração visual de sucesso
                 messageBox.classList.remove('text-gray-600', 'text-red-700');
                 messageBox.classList.add('text-green-700', 'font-bold');
                 
@@ -135,41 +140,22 @@
                 } else {
                     messageBox.textContent = "✅ Decisão Sábia! Sushi Confirmado! 🍣";
                 }
-                
                 yesButton.classList.add('animate-pulse', 'scale-110');
-                
-                // Dispara os confetes!
                 dispararConfetes();
-
-            } else {
-                // Caso teórico (impossível de chegar aqui com a lógica atual, mas mantido por segurança)
-                messageBox.textContent = "❌ Sem sushi...";
             }
-
-            // Centraliza o botão vencedor
             yesButton.classList.add('w-full', 'py-4', 'top-1/4', 'left-1/2', '-translate-x-1/2', 'absolute', 'z-50');
             noButton.style.display = 'none';
         }
 
         function dispararConfetes() {
-            // Efeito de explosão de confetes
             var duration = 3 * 1000;
             var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
-
-            function randomInRange(min, max) {
-                return Math.random() * (max - min) + min;
-            }
-
+            function randomInRange(min, max) { return Math.random() * (max - min) + min; }
             var interval = setInterval(function() {
                 var timeLeft = animationEnd - Date.now();
-
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
-                }
-
+                if (timeLeft <= 0) { return clearInterval(interval); }
                 var particleCount = 50 * (timeLeft / duration);
-                // Confetes saindo de dois pontos aleatórios
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
             }, 250);
