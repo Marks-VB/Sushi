@@ -12,6 +12,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #f7fee7; /* Verde claro/Creme */
             overflow: hidden; /* Evita barras de rolagem ao mover o botão */
+            touch-action: manipulation; /* Melhoria de performance em touchscreens */
         }
         /* Classe para o botão "Não" que será posicionado de forma absoluta */
         .fugitive-button {
@@ -65,6 +66,7 @@
         const messageBox = document.getElementById('messageBox');
         const buttonArea = document.getElementById('buttonArea');
         let moveCount = 0; // Contador de cliques no 'Não'
+        const MAX_MOVES = 5; // Número de cliques para forçar o 'Sim'
 
         // Dimensões mínimas e máximas para o movimento do botão
         const PADDING = 20; // Espaçamento de segurança das bordas
@@ -88,7 +90,7 @@
             if (yesButton.disabled) return; // Se a decisão já foi tomada, não move
 
             moveCount++;
-            messageBox.textContent = `Opa! O botão 'Não' tentou fugir... (${moveCount}x)`;
+            messageBox.textContent = `Opa! O botão 'Não' tentou fugir... (${moveCount}/${MAX_MOVES} tentativas!)`;
 
             // 1. Obter limites da área de movimento (buttonArea)
             const bounds = buttonArea.getBoundingClientRect();
@@ -115,8 +117,8 @@
             noButton.style.top = `${newTop}px`;
             noButton.style.transform = 'none'; // Remove a tradução inicial (-translate-x-1/2)
 
-            // 5. Se o usuário for muito persistente (5 cliques no 'Não'), confirma o 'Sim' (Sushi)
-            if (moveCount >= 5) {
+            // 5. Se o usuário for muito persistente, força o 'Sim' (Sushi)
+            if (moveCount >= MAX_MOVES) {
                 // Atraso de 200ms para permitir a transição final do movimento
                 setTimeout(() => {
                     confirmDecision(true); // <--- Confirma SIM (Sushi)
@@ -139,8 +141,8 @@
                 messageBox.classList.add('text-green-700');
                 
                 // Verifica se o SIM veio por persistência (movimentos no 'Não')
-                if (moveCount >= 5) {
-                    messageBox.textContent = "🥳 Você tentou escapar 5 vezes, mas a persistência garante: Sushi Confirmado! 🍣";
+                if (moveCount >= MAX_MOVES) {
+                    messageBox.textContent = `🥳 Você tentou escapar ${MAX_MOVES} vezes! A persistência garante: Sushi Confirmado! 🍣`;
                 } else {
                     messageBox.textContent = "✅ Decisão Confirmada! Sushi é amanhã! 🍣";
                 }
